@@ -10,8 +10,6 @@ services:
     working_dir: /usr/src/smart-brain-server
     environment:
       POSTGRES_URI: ${POSTGRES_URI}
-    links:
-      - postgres
     ports:
       - '3001:3001'
     volumes:
