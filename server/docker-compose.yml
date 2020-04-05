@@ -1,15 +1,30 @@
 version: '3.7'
 
 services:
+  # Backend API
   smart-brain-server:
     container_name: backend
     # image: node:12.16.1 If we use the build: ./ it will use the Dockerfile
     build: ./
     command: npm start
     working_dir: /usr/src/smart-brain-server
+    environment:
+      POSTGRES_URI: ${POSTGRES_URI}
+    links:
+      - postgres
     ports:
-      - "3001:3001"
+      - '3001:3001'
     volumes:
       - ./:/usr/src/smart-brain-server
-      
-    
+
+  # Postgres DB
+  postgres:
+    container_name: postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_HOST: ${POSTGRES_HOST}
+    image: postgres
+    ports:
+      - '5432:5432'
