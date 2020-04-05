@@ -1,0 +1,12 @@
+version: '3.7'
+
+services:
+  smart-brain-server:
+    container_name: backend
+    # image: node:12.16.1 If we use the build: ./ it will use the Dockerfile
+    build: ./
+    command: npm start
+    working_dir: /usr/src/smart-brain-server
+    ports:
+      - "3001:3001"
+    
