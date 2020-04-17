@@ -13,7 +13,7 @@ const morgan = require('morgan');
 
 const db = knex({
 	client: 'pg',
-	connection: process.env.POSTGRES_URI
+	connection: process.env.POSTGRES_URI,
 });
 
 const app = express();
@@ -31,6 +31,9 @@ app.post('/register', (req, res) => {
 });
 app.get('/profile/:id', (req, res) => {
 	profile.handleProfileGet(req, res, db);
+});
+app.post('/profile/:id', (req, res) => {
+	profile.handleProfileUpdate(req, res, db);
 });
 app.put('/image', (req, res) => {
 	image.handleImage(req, res, db);
