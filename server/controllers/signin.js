@@ -1,5 +1,25 @@
 const jwt = require('jsonwebtoken');
 
+const redis = require('redis');
+const redisClient = redis.createClient(process.env.REDIS_URI);
+
+const signToken = username => {
+	const jwtPayload = { username };
+	return jwt.sign(jwtPayload, 'JWT_SECRET_KEY', { expiresIn: '2 days' });
+};
+
+const setToken = (key, value) => Promise.resolve(redisClient.set(key, value));
+
+const createSession = user => {
+	const { email, id } = user;
+	const token = signToken(email);
+	return setToken(token, id)
+		.then(() => {
+			return { success: 'true', userId: id, token, user };
+		})
+		.catch(console.log);
+};
+
 const handleSignin = (db, bcrypt, req, res) => {
 	const { email, password } = req.body;
 	if (!email || !password) {
@@ -17,27 +37,22 @@ const handleSignin = (db, bcrypt, req, res) => {
 					.from('users')
 					.where('email', '=', email)
 					.then(user => user[0])
-					.catch(err => Promise.reject('unable to get user'));
+					.catch(err => res.status(400).json('unable to get user'));
 			} else {
-				Promise.reject('wrong credentials');
+				return Promise.reject('wrong credentials');
 			}
 		})
-		.catch(err => Promise.reject('wrong credentials'));
+		.catch(err => err);
 };
 
-const getAuthTokenId = () => {
-	console.log('auth ok');
-};
-
-const signToken = username => {
-	const jwtPayload = { username };
-	return jwt.sign(jwtPayload, 'JWT_SECRET_KEY', { expiresIn: '2 days' });
-};
-
-const createSession = user => {
-	const { email, id } = user;
-	const token = signToken(email);
-	return { success: 'true', userId: id, token, user };
+const getAuthTokenId = (req, res) => {
+	const { authorization } = req.headers;
+	return redisClient.get(authorization, (err, reply) => {
+		if (err || !reply) {
+			return res.status(401).send('Unauthorized');
+		}
+		return res.json({ id: reply });
+	});
 };
 
 const signinAuthentication = (db, bcrypt) => (req, res) => {
@@ -54,4 +69,5 @@ const signinAuthentication = (db, bcrypt) => (req, res) => {
 
 module.exports = {
 	signinAuthentication: signinAuthentication,
+	redisClient: redisClient,
 };
