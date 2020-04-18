@@ -11,22 +11,27 @@ class Profile extends Component {
 		};
 	}
 
-	onProfileUpdate = (data) => {
-		fetch(`http://localhost:3000/profile/${this.props.user.id}`, {
+	onProfileUpdate = data => {
+		fetch(`http://localhost:3001/profile/${this.props.user.id}`, {
 			method: 'post',
-			headers: { 'Content-Type': 'application/json' },
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: window.sessionStorage.getItem('token'),
+			},
 			body: JSON.stringify({
 				formInput: data,
 			}),
 		})
-			.then((resp) => {
-				this.props.toggleModal();
-				this.props.loadUser({ ...this.props.user, ...data });
+			.then(resp => {
+				if (resp.status === 200 || resp.status === 304) {
+					this.props.toggleModal();
+					this.props.loadUser({ ...this.props.user, ...data });
+				}
 			})
 			.catch(console.log);
 	};
 
-	onFormChange = (event) => {
+	onFormChange = event => {
 		switch (event.target.name) {
 			case 'user-name':
 				this.setState({ name: event.target.value });
@@ -108,7 +113,7 @@ class Profile extends Component {
 							</button>
 						</div>
 					</main>
-					<div className="modal-close" onClick={() => toggleModal()}>
+					<div className="modal-close" onClick={toggleModal}>
 						&times;
 					</div>
 				</article>
