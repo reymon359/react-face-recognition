@@ -10,10 +10,18 @@ services:
     working_dir: /usr/src/smart-brain-server
     environment:
       POSTGRES_URI: ${POSTGRES_URI}
+      REDIS_URI: ${REDIS_URI}
     ports:
       - '3001:3001'
     volumes:
       - ./:/usr/src/smart-brain-server
+
+  # Redis
+  redis:
+    container_name: redis
+    image: redis
+    ports:
+      - '6379:6379'
 
   # Postgres DB
   postgres:
